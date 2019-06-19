@@ -158,5 +158,15 @@ i {
     margin-top: 15px;
 }
 
+.input-wrapper {
+    text-align: center;
+}
+.score-limit-input {
+    width: 260px;
+    height: 30px;
+    text-align: center;
+    font: 16px/30px Lato, sans-serif;
+}
+
 .winner { background-color: #f7f7f7; }
 .winner .player-name { font-weight: 300; color: #EB4D4D; }
