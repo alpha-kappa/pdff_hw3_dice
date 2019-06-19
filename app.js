@@ -26,15 +26,24 @@ const Gamer = function() {
   this.resetScore = function() {
     this.setScore(0);
   }
+
+  this.getPrevWins = function() {
+    const winners = getWinnersFromLS();
+    const matchedPlayer = winners.find(winner => winner.name === this.name);
+    if (!matchedPlayer) return 0;
+    return confirm(`We found player with the same name "${matchedPlayer.name}" and ${matchedPlayer.wins} wins. Is it You?`) ? matchedPlayer.wins : 0;
+  }
 }
 
 const Player = function() {
   this.name = this.getName();
   this.score = 0;
+  this.wins = this.getPrevWins();
 }
 
 Player.prototype = new Gamer();
 
+const LS_WINNERS_KEY = 'winners';
 const RESET_VALUE = 2;
 const checkChangePlayerCondition = diceValues => (diceValues[0] === diceValues[1]) || diceValues.includes(RESET_VALUE);
 const SCORE_LIMIT_DEFAULT = 100; 
@@ -48,12 +57,13 @@ const diceElements = [
   document.querySelector('.dice-2'),
 ];
 const scoreLimitEl = document.getElementById('score-limit-input');
+const showWinnersBtn = document.getElementsByClassName('btn-winners')[0];
 
 const initGame = () => {
   players = [
     new Player(), 
     new Player(),
-  ]; 
+  ];
 
   console.log(players);
 
@@ -88,6 +98,8 @@ document.querySelector('.btn-roll').addEventListener('click', function() {
     document.getElementById('current-'+activePlayer).textContent = current;
 
     if (players[activePlayer].getScore() + current >= scoreLimit) {
+      players[activePlayer].wins += 1;
+      saveWinnersToLS();
       alert(`${players[activePlayer].name} won!!!`);
     }
     
@@ -96,6 +108,20 @@ document.querySelector('.btn-roll').addEventListener('click', function() {
 
 scoreLimitEl.addEventListener('input', function(e) {
   scoreLimit = Math.max(0, parseInt(e.currentTarget.value)) || SCORE_LIMIT_DEFAULT;
+})
+
+showWinnersBtn.addEventListener('click', function() {
+  const winners = getWinnersFromLS();
+  let message = 'No one wins, yet!';
+
+  if (winners.length) {
+    message = winners
+      .sort((a, b) => b.wins - a.wins)
+      .map(player => `${player.wins} - ${player.name}`)
+      .join('\n');
+  }
+
+  alert(message);
 })
 
 const changePlayer = () => {
@@ -121,4 +147,23 @@ document.querySelector('.btn-new').addEventListener('click', function() {
 
 function getRandomDiceValue() {
   return Math.floor(Math.random() * 6) + 1
+}
+
+function getWinners() {
+  return players.filter(player => player.wins > 0);
+}
+
+function saveWinnersToLS() {
+  const winnersFromLS = getWinnersFromLS();
+  const winners = getWinners();
+  const winnersFromLSWithoutCurrentWinners = winnersFromLS.filter(winnerFromLS => { 
+    return !winners.some(winner => winnerFromLS.name === winner.name);
+  })
+
+  const updatedWinnersFromLS = [...winnersFromLSWithoutCurrentWinners, ...winners];
+  localStorage.setItem(LS_WINNERS_KEY, JSON.stringify(updatedWinnersFromLS));
+}
+
+function getWinnersFromLS() {
+  return localStorage.getItem(LS_WINNERS_KEY) ? JSON.parse(localStorage.getItem(LS_WINNERS_KEY)) : [];
 }
