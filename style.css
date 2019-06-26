@@ -170,3 +170,17 @@ i {
 
 .winner { background-color: #f7f7f7; }
 .winner .player-name { font-weight: 300; color: #EB4D4D; }
+
+.winners-buttons-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.winners-buttons-wrapper button {
+    position: static;
+    left: auto;
+    transform: none;
+    width: auto;
+    padding-left: 10px;
+    padding-right: 10px;
+}
