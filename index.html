@@ -30,12 +30,20 @@
             </div>
             
             <button class="btn-new"><i class="ion-ios-plus-outline"></i>Новая игра</button>
+            <button class="btn-winners">Победители</button>
             <button class="btn-roll"><i class="ion-ios-loop"></i>Бросок</button>
             <button class="btn-hold"><i class="ion-ios-download-outline"></i>Сохранить</button>
             
-            <img src="dice-5.png" alt="Dice" class="dice">
+            <div class="dice-wrapper">
+                <img src="dice-5.png" alt="Dice1" class="dice dice-1">
+                <img src="dice-5.png" alt="Dice2" class="dice dice-2">
+            </div>
+
+            <div class="input-wrapper">
+                <input class="score-limit-input" id="score-limit-input" type="number" min="0" max="1000" title="VALUE MUST BE an INTEGER BETWEEN 0 AND 1000 (default 100)" placeholder="Enter win score limit">
+            </div>
         </div>
-        
+
         <script src="app.js"></script>
     </body>
 </html>
