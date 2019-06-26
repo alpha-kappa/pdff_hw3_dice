@@ -8,32 +8,10 @@ GAME RULES:
 - The first player to reach score limit (default is 100) points on GLOBAL score wins the game
 
 */
+import Gamer from './gamer'; 
+import WinnersStorage from './winnersStorage';
 
-const Gamer = function() {
-  this.getName = function getName() {
-    const name = prompt('Enter player name', 'player ') || getName();
-    return name;
-  }
-  
-  this.setScore = function(score) {
-    this.score = score;
-  }
-
-  this.getScore = function() {
-    return this.score;
-  }
-
-  this.resetScore = function() {
-    this.setScore(0);
-  }
-
-  this.getPrevWins = function() {
-    const winners = getWinnersFromLS();
-    const matchedPlayer = winners.find(winner => winner.name === this.name);
-    if (!matchedPlayer) return 0;
-    return confirm(`We found player with the same name "${matchedPlayer.name}" and ${matchedPlayer.wins} wins. Is it You?`) ? matchedPlayer.wins : 0;
-  }
-}
+const winnersStorage = new WinnersStorage();
 
 const Player = function() {
   this.name = this.getName();
@@ -43,7 +21,6 @@ const Player = function() {
 
 Player.prototype = new Gamer();
 
-const LS_WINNERS_KEY = 'winners';
 const RESET_VALUE = 2;
 const checkChangePlayerCondition = diceValues => (diceValues[0] === diceValues[1]) || diceValues.includes(RESET_VALUE);
 const SCORE_LIMIT_DEFAULT = 100; 
@@ -58,14 +35,13 @@ const diceElements = [
 ];
 const scoreLimitEl = document.getElementById('score-limit-input');
 const showWinnersBtn = document.getElementsByClassName('btn-winners')[0];
+const resetWinnersBtn = document.getElementsByClassName('btn-reset-winners')[0];
 
 const initGame = () => {
   players = [
     new Player(), 
     new Player(),
   ];
-
-  console.log(players);
 
   document.querySelector('#name-0').textContent = players[0].name;
   document.querySelector('#name-1').textContent = players[1].name;
@@ -99,7 +75,7 @@ document.querySelector('.btn-roll').addEventListener('click', function() {
 
     if (players[activePlayer].getScore() + current >= scoreLimit) {
       players[activePlayer].wins += 1;
-      saveWinnersToLS();
+      winnersStorage.save(players);
       alert(`${players[activePlayer].name} won!!!`);
     }
     
@@ -111,7 +87,7 @@ scoreLimitEl.addEventListener('input', function(e) {
 })
 
 showWinnersBtn.addEventListener('click', function() {
-  const winners = getWinnersFromLS();
+  const winners = winnersStorage.get();
   let message = 'No one wins, yet!';
 
   if (winners.length) {
@@ -122,6 +98,16 @@ showWinnersBtn.addEventListener('click', function() {
   }
 
   alert(message);
+})
+
+resetWinnersBtn.addEventListener('click', function() {
+  const winners = winnersStorage.get();
+  const question = 'You try to reset winners table.\n\nAre you sure, you want to erase wins history?'
+
+  if (!winners || !confirm(question)) return;
+
+  winnersStorage.reset();
+  alert('Wins history erased.');
 })
 
 const changePlayer = () => {
@@ -147,23 +133,4 @@ document.querySelector('.btn-new').addEventListener('click', function() {
 
 function getRandomDiceValue() {
   return Math.floor(Math.random() * 6) + 1
-}
-
-function getWinners() {
-  return players.filter(player => player.wins > 0);
-}
-
-function saveWinnersToLS() {
-  const winnersFromLS = getWinnersFromLS();
-  const winners = getWinners();
-  const winnersFromLSWithoutCurrentWinners = winnersFromLS.filter(winnerFromLS => { 
-    return !winners.some(winner => winnerFromLS.name === winner.name);
-  })
-
-  const updatedWinnersFromLS = [...winnersFromLSWithoutCurrentWinners, ...winners];
-  localStorage.setItem(LS_WINNERS_KEY, JSON.stringify(updatedWinnersFromLS));
-}
-
-function getWinnersFromLS() {
-  return localStorage.getItem(LS_WINNERS_KEY) ? JSON.parse(localStorage.getItem(LS_WINNERS_KEY)) : [];
 }
